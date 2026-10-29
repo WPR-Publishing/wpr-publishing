@@ -1,0 +1,186 @@
+
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#17263c">
+  <meta name="description" content="Scopri i libri e le novità di WPR Publishing.">
+  <title>WPR Publishing — Il catalogo</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      color: #243044;
+      background: #f7f6f2;
+      line-height: 1.6;
+    }
+    header {
+      background: #17263c;
+      color: white;
+      padding: 24px 6%;
+    }
+    header h1 { margin: 0; letter-spacing: 1px; }
+    header p { margin: 4px 0 0; color: #d6deea; }
+    nav { margin-top: 18px; }
+    nav a {
+      color: white;
+      margin-right: 20px;
+      text-decoration: none;
+    }
+    .hero {
+      padding: 56px 6%;
+      background: #e8e4d9;
+    }
+    .hero h2 {
+      font-family: Georgia, serif;
+      font-size: clamp(30px, 5vw, 48px);
+      line-height: 1.15;
+      max-width: 650px;
+      margin: 0 0 14px;
+    }
+    .hero p { max-width: 600px; }
+    main { padding: 30px 6% 60px; }
+    .section-title {
+      font-family: Georgia, serif;
+      font-size: 30px;
+    }
+    .catalog {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 22px;
+    }
+    .book {
+      background: white;
+      border: 1px solid #e1ded6;
+      border-radius: 8px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .cover {
+      width: 100%;
+      aspect-ratio: 2 / 3;
+      max-height: 260px;
+      background: #e8e4d9;
+      color: #5b6470;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 20px;
+      font-family: Georgia, serif;
+      font-size: 22px;
+    }
+    .book h3 { margin-bottom: 4px; }
+    .category {
+      color: #657187;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .book p { margin-top: 6px; }
+    .button {
+      display: inline-block;
+      margin-top: auto;
+      padding: 10px 16px;
+      background: #17263c;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+    }
+    .notice {
+      padding: 22px;
+      margin-top: 36px;
+      border: 1px solid #d8d4ca;
+      border-radius: 8px;
+      background: white;
+    }
+    footer {
+      background: #17263c;
+      color: white;
+      padding: 24px 6%;
+      font-size: 14px;
+    }
+    @media (max-width: 500px) {
+      header, .hero, main { padding-left: 20px; padding-right: 20px; }
+      nav a { display: inline-block; margin-bottom: 8px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>WPR Publishing</h1>
+    <p>Libri, idee e nuove storie da scoprire.</p>
+    <nav>
+      <a href="#home">Home</a>
+      <a href="#catalogo">Catalogo</a>
+      <a href="#novita">Novità</a>
+    </nav>
+  </header>
+
+  <section class="hero" id="home">
+    <h2>Ogni libro apre una nuova porta.</h2>
+    <p>
+      Esplora il catalogo WPR Publishing:
+      romanzi, fantascienza, fantasy, libri per ragazzi,
+      saggistica e tante altre pubblicazioni.
+    </p>
+  </section>
+
+  <main>
+    <section id="catalogo">
+      <h2 class="section-title">Il nostro catalogo</h2>
+      <p>
+        Una selezione delle nostre pubblicazioni.
+        Il catalogo completo sarà disponibile qui.
+      </p>
+
+      <div class="catalog">
+        <article class="book">
+          <div class="cover">Copertina del libro</div>
+          <span class="category">Narrativa</span>
+          <h3>Primo libro</h3>
+          <p>Sostituire questo esempio con titolo e descrizione reali.</p>
+          <a class="button" href="#novita">Scheda in preparazione</a>
+        </article>
+
+        <article class="book">
+          <div class="cover">Copertina del libro</div>
+          <span class="category">Saggistica</span>
+          <h3>Secondo libro</h3>
+          <p>Sostituire questo esempio con titolo e descrizione reali.</p>
+          <a class="button" href="#novita">Scheda in preparazione</a>
+        </article>
+
+        <article class="book">
+          <div class="cover">Copertina del libro</div>
+          <span class="category">Agende e attività</span>
+          <h3>Terzo libro</h3>
+          <p>Sostituire questo esempio con titolo e descrizione reali.</p>
+          <a class="button" href="#novita">Scheda in preparazione</a>
+        </article>
+      </div>
+    </section>
+
+    <section class="notice" id="novita">
+      <h2>Le nuove uscite</h2>
+      <p>
+        Torna a trovarci per scoprire le prossime pubblicazioni
+        di WPR Publishing.
+      </p>
+      <p>
+        <strong>Presto:</strong> informazioni sulle novità
+        e notifiche per i lettori che desiderano riceverle.
+      </p>
+    </section>
+  </main>
+
+  <footer>
+    <p>© WPR Publishing — Tutti i diritti riservati.</p>
+    <p>Catalogo editoriale e collegamenti alle pagine di acquisto.</p>
+  </footer>
+</body>
+</html>
