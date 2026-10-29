@@ -2,12 +2,20 @@
 {
   "id": "/wpr-publishing/",
   "name": "WPR Publishing",
-  "short_name": "WPR Publishing",
+  "short_name": "WPR",
   "description": "Scopri i libri e le novità di WPR Publishing.",
   "lang": "it",
   "start_url": "/wpr-publishing/",
   "scope": "/wpr-publishing/",
   "display": "standalone",
   "background_color": "#f7f6f2",
-  "theme_color": "#17263c"
+  "theme_color": "#17263c",
+  "icons": [
+    {
+      "src": "/wpr-publishing/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
 }
