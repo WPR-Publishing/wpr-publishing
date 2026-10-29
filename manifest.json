@@ -12,6 +12,18 @@
   "theme_color": "#17263c",
   "icons": [
     {
+      "src": "/wpr-publishing/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/wpr-publishing/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
       "src": "/wpr-publishing/icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
