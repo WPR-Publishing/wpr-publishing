@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#17263c">
+<meta name="description" content="Scopri il catalogo e le novità di WPR Publishing.">
+<title>WPR Publishing | Catalogo libri</title>
+<link rel="manifest" href="/wpr-publishing/manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<style>
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:Arial,sans-serif;color:#243044;background:#f7f6f2;line-height:1.6}
+header{background:#17263c;color:white;padding:24px 6%}header h1{margin:0;letter-spacing:1px}header p{margin:4px 0 0;color:#d6deea}
+nav{margin-top:18px}nav a{color:white;margin-right:22px;text-decoration:none}nav a:hover{text-decoration:underline}
+.hero{padding:55px 6%;background:#e8e4d9}.hero h2{font-family:Georgia,serif;font-size:clamp(32px,5vw,48px);line-height:1.15;max-width:700px;margin:0 0 16px}.hero p{max-width:650px}
+main{padding:30px 6% 60px}.section-title{font-family:Georgia,serif;font-size:30px}
+.catalog{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:22px}
+.book{background:white;border:1px solid #e1ded6;border-radius:8px;padding:18px;display:flex;flex-direction:column;align-items:stretch;min-width:0}
+.cover{width:100%;max-width:280px;aspect-ratio:2/3;max-height:380px;margin:0 auto;background:#e8e4d9;color:#17263c;display:flex;align-items:center;justify-content:center;text-align:center;padding:22px;font-family:Georgia,serif;border:1px solid #d8d1c2;overflow:hidden}
+.cover img{width:100%;height:100%;object-fit:contain;display:block}.cover-placeholder{display:flex;flex-direction:column;align-items:center;overflow-wrap:anywhere}.cover-placeholder span{font-family:Arial,sans-serif;font-size:11px;letter-spacing:2px;margin-bottom:20px}.cover-placeholder strong{font-size:23px;line-height:1.25}
+.category{color:#657187;font-size:12px;text-transform:uppercase;letter-spacing:1px;margin-top:15px}.book h3{margin:5px 0;font-size:19px;overflow-wrap:anywhere}.book p{margin:5px 0 20px}
+.button{display:inline-block;margin-top:auto;padding:11px 14px;background:#17263c;color:white;text-decoration:none;text-align:center;border-radius:5px}.button:hover{background:#304967}
+.notice,.catalog-message{padding:24px;margin-top:40px;border:1px solid #d8d4ca;border-radius:8px;background:white}.catalog-message{margin:18px 0;padding:18px}
+footer{background:#17263c;color:white;padding:24px 6%;font-size:14px}
+@media(max-width:500px){header,.hero,main{padding-left:20px;padding-right:20px}nav a{display:inline-block;margin-bottom:8px}}
+</style>
+</head>
+<body>
+<header><h1>WPR Publishing</h1><p>Libri, idee e nuove storie da scoprire.</p><nav><a href="#home">Home</a><a href="#catalogo">Catalogo</a><a href="#novita">Novità</a></nav></header>
+<section class="hero" id="home"><h2>Ogni libro apre una nuova porta.</h2><p>Scopri le pubblicazioni WPR Publishing: libri pratici, agende, saggistica e guide, per trovare nuove idee e informazioni utili.</p></section>
+<main>
+<section id="catalogo"><h2 class="section-title">Il nostro catalogo</h2><p>Scopri i nostri libri e consulta le relative pagine Amazon.</p><div id="catalog-message" class="catalog-message" role="status">Caricamento del catalogo…</div><div class="catalog" id="catalog" aria-live="polite"></div></section>
+<section class="notice" id="novita"><h2>Le nuove uscite</h2><p>Questa sezione sarà dedicata alle nuove pubblicazioni di WPR Publishing.</p><p>Stiamo preparando un sistema per permettere ai lettori di ricevere aggiornamenti sulle prossime uscite.</p></section>
+</main>
+<footer><p>© WPR Publishing — Tutti i diritti riservati.</p><p>Scopri i libri e visita le rispettive pagine Amazon.</p></footer>
+<script>
+const SUPABASE_URL="https://ghvvotagwphvyfenxbqi.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_2DB7v3ZJsfFtmJBsSEjHAg_AFj71rC6";
+const catalogElement=document.getElementById("catalog");
+const messageElement=document.getElementById("catalog-message");
+
+function makeCoverPlaceholder(book){
+  const placeholder=document.createElement("div"); placeholder.className="cover-placeholder";
+  const brand=document.createElement("span"); brand.textContent="WPR PUBLISHING";
+  const title=document.createElement("strong"); title.textContent=book.titolo||"Libro";
+  placeholder.append(brand,title); return placeholder;
+}
+function makeCover(book){
+  const cover=document.createElement("div"); cover.className="cover";
+  if(book.copertina_url){
+    const image=document.createElement("img"); image.src=book.copertina_url;
+    image.alt="Copertina di "+(book.titolo||"un libro WPR Publishing"); image.loading="lazy";
+    image.onerror=()=>cover.replaceChildren(makeCoverPlaceholder(book)); cover.appendChild(image);
+  } else cover.appendChild(makeCoverPlaceholder(book));
+  return cover;
+}
+function makeBookCard(book){
+  const article=document.createElement("article"); article.className="book"; article.appendChild(makeCover(book));
+  if(book.categoria){const category=document.createElement("div");category.className="category";category.textContent=book.categoria;article.appendChild(category);}
+  const title=document.createElement("h3");title.textContent=book.titolo||"Titolo non disponibile";article.appendChild(title);
+  if(book.descrizione){const description=document.createElement("p");description.textContent=book.descrizione;article.appendChild(description);}
+  if(book.amazon_url){const link=document.createElement("a");link.className="button";link.href=book.amazon_url;link.target="_blank";link.rel="noopener noreferrer";link.textContent=(book.categoria||"").toLowerCase().includes("english")?"Discover on Amazon":"Scopri su Amazon";article.appendChild(link);}
+  return article;
+}
+async function loadCatalog(){
+  try{
+    const params=new URLSearchParams();
+    params.set("select",'id,titolo,descrizione,amazon_url,copertina_url,categoria,"ordine di visualizzazione",se_visibile');
+    params.set("se_visibile","eq.true");
+    params.set("order",'"ordine di visualizzazione".asc');
+    const response=await fetch(`${SUPABASE_URL}/rest/v1/books?${params.toString()}`,{headers:{"apikey":SUPABASE_PUBLISHABLE_KEY,"Accept":"application/json"},cache:"no-store"});
+    if(!response.ok) throw new Error(`Supabase ha risposto ${response.status}: ${await response.text()}`);
+    const books=await response.json(); catalogElement.replaceChildren();
+    if(!Array.isArray(books)||books.length===0){messageElement.textContent="Al momento non ci sono libri pubblicati.";messageElement.hidden=false;return;}
+    books.forEach(book=>catalogElement.appendChild(makeBookCard(book)));messageElement.hidden=true;
+  }catch(error){console.error("Errore nel caricamento del catalogo:",error);messageElement.textContent="Non è stato possibile caricare il catalogo in questo momento. Riprova più tardi.";messageElement.hidden=false;}
+}
+loadCatalog();
+if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("/wpr-publishing/sw.js").catch(error=>console.error("Registrazione service worker fallita:",error)));}
+</script>
+</body>
+</html>
