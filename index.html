@@ -249,5 +249,17 @@
     <p>© WPR Publishing — Tutti i diritti riservati.</p>
     <p>Scopri i libri e visita le rispettive pagine Amazon.</p>
   </footer>
+  
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("/wpr-publishing/sw.js")
+        .catch((error) => {
+          console.error("Registrazione service worker fallita:", error);
+        });
+    });
+  }
+</script>
+
 </body>
 </html>
