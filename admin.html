@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><title>Amministrazione | WPR Publishing</title>
+<style>
+:root{--navy:#142a3b;--mint:#b8e4d6;--paper:#f5f7f7;--line:#d8e0e2;--ink:#1d2932;--muted:#5e6b73;--red:#a52727}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);background:var(--paper);line-height:1.5}
+header{background:var(--navy);color:white;padding:22px max(18px,calc((100% - 1040px)/2))}header h1{margin:0;font-size:1.35rem}header p{margin:4px 0 0;color:#dce8ed}
+main{width:min(1040px,calc(100% - 28px));margin:24px auto 56px}.panel{background:white;border:1px solid var(--line);border-radius:14px;padding:22px;margin-bottom:18px;box-shadow:0 3px 12px #102a3b08}
+h2{margin:0 0 14px;font-size:1.2rem}h3{margin:0 0 8px;font-size:1rem}.hint{color:var(--muted);font-size:.93rem;margin-top:0}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.field{margin-bottom:14px}.full{grid-column:1/-1}label{display:block;font-weight:650;font-size:.92rem;margin-bottom:6px}
+input,textarea,select{width:100%;font:inherit;padding:11px 12px;border:1px solid #bfcbd0;border-radius:8px;background:white;color:var(--ink)}textarea{min-height:105px;resize:vertical}
+.checkrow{display:flex;align-items:center;gap:10px;margin:8px 0 16px}.checkrow input{width:auto}
+button{font:inherit;font-weight:650;border:0;border-radius:8px;padding:10px 15px;cursor:pointer;background:var(--navy);color:white}button.secondary{background:#e9eff1;color:var(--navy);border:1px solid var(--line)}button.danger{background:#fff0f0;color:var(--red);border:1px solid #e8bcbc}button:disabled{opacity:.55;cursor:wait}
+.actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.hidden{display:none!important}#status{margin:12px 0 0;min-height:1.5em;white-space:pre-wrap}#status.error{color:var(--red)}#status.success{color:#176b48}
+.book-list{display:grid;gap:12px}.book{display:grid;grid-template-columns:76px 1fr auto;gap:14px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:12px}.book img{width:76px;height:100px;object-fit:contain;background:#f0f3f4;border-radius:5px}.book p{margin:3px 0;color:var(--muted);font-size:.9rem;overflow-wrap:anywhere}.book-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}.pill{display:inline-block;padding:2px 8px;border-radius:20px;background:#edf5f2;color:#245a49;font-size:.78rem}.preview{max-width:140px;max-height:180px;object-fit:contain;display:block;margin-top:10px}footer{text-align:center;color:var(--muted);font-size:.85rem;padding:0 16px 26px}
+@media(max-width:650px){.grid{grid-template-columns:1fr;gap:0}.full{grid-column:auto}.book{grid-template-columns:60px 1fr}.book img{width:60px;height:82px}.book-actions{grid-column:1/-1;justify-content:flex-start}.panel{padding:16px}}
+</style>
+</head>
+<body>
+<header><h1>WPR Publishing — Amministrazione</h1><p>Gestione privata del catalogo libri</p></header>
+<main>
+<section class="panel" id="loginPanel">
+<h2>Accesso amministratore</h2><p class="hint">Accedi con l'email e la password dell'utente creato in Supabase Authentication.</p>
+<form id="loginForm"><div class="field"><label for="email">Email</label><input id="email" type="email" autocomplete="username" required></div><div class="field"><label for="password">Password</label><input id="password" type="password" autocomplete="current-password" required></div><button id="loginButton" type="submit">Accedi</button></form><p id="loginStatus" role="status"></p>
+</section>
+<section class="hidden" id="adminPanel">
+<section class="panel"><div class="actions" style="justify-content:space-between"><div><h2 style="margin-bottom:2px">Catalogo</h2><p class="hint" style="margin:0">I libri visibili vengono mostrati sul sito pubblico.</p></div><button class="secondary" id="logoutButton" type="button">Esci</button></div></section>
+<section class="panel" id="editorPanel"><h2 id="formTitle">Aggiungi un libro</h2><p class="hint">Copertina JPG, PNG o WebP, massimo 5 MB.</p>
+<form id="bookForm"><input id="bookId" type="hidden"><input id="oldCoverUrl" type="hidden">
+<div class="grid">
+<div class="field full"><label for="title">Titolo *</label><input id="title" required maxlength="250"></div>
+<div class="field full"><label for="description">Descrizione</label><textarea id="description" maxlength="5000"></textarea></div>
+<div class="field"><label for="amazonUrl">Link Amazon</label><input id="amazonUrl" type="url" placeholder="https://www.amazon.it/dp/"></div>
+<div class="field"><label for="category">Categoria</label><select id="category"><option>Saggistica</option><option>Agenda</option><option>Cucina</option><option>Guide pratiche</option><option>Fai da te</option><option>Benessere</option><option>Attività</option><option>Altro</option></select></div>
+<div class="field"><label for="sortOrder">Ordine di visualizzazione</label><input id="sortOrder" type="number" step="1" value="0"></div>
+<div class="field"><label for="coverFile">Copertina dal computer</label><input id="coverFile" type="file" accept="image/jpeg,image/png,image/webp"><img id="coverPreview" class="preview hidden" alt="Anteprima copertina"></div>
+</div>
+<label class="checkrow"><input id="visible" type="checkbox" checked> Visibile nel catalogo pubblico</label>
+<div class="actions"><button id="saveButton" type="submit">Salva libro</button><button class="secondary hidden" id="cancelEditButton" type="button">Annulla modifica</button><button class="secondary" id="resetButton" type="reset">Svuota campi</button></div><p id="status" role="status"></p>
+</form></section>
+<section class="panel"><div class="actions" style="justify-content:space-between"><h2 style="margin:0">Libri inseriti</h2><button class="secondary" id="refreshButton" type="button">Aggiorna elenco</button></div><p class="hint">La lista include anche i libri non visibili al pubblico.</p><div id="bookList" class="book-list"></div><p id="listStatus" class="hint" role="status"></p></section>
+</section></main><footer>WPR Publishing · Pagina di amministrazione non indicizzata</footer>
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+// Chiave pubblicabile, adatta al browser. Non inserire mai qui una secret/service_role key.
+const SUPABASE_URL='https://ghvvotagwphvyfenxbqi.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY='sb_publishable_2DB7v3ZJsfFtmJBsSEjHAg_AFj71rC6';
+const BUCKET='copertine-libri', supabase=createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+const $=id=>document.getElementById(id);let currentUser=null;
+function setStatus(msg,type=''){ $('status').textContent=msg;$('status').className=type; }
+function errText(e){return e?.message||'Si è verificato un errore. Riprova.'}
+function clearForm(){ $('bookForm').reset();$('bookId').value='';$('oldCoverUrl').value='';$('sortOrder').value='0';$('visible').checked=true;$('formTitle').textContent='Aggiungi un libro';$('saveButton').textContent='Salva libro';$('cancelEditButton').classList.add('hidden');$('coverPreview').classList.add('hidden');$('coverPreview').removeAttribute('src');setStatus('');}
+function showIn(user){currentUser=user;$('loginPanel').classList.add('hidden');$('adminPanel').classList.remove('hidden');loadBooks();}
+function showOut(){currentUser=null;$('adminPanel').classList.add('hidden');$('loginPanel').classList.remove('hidden');}
+$('loginForm').addEventListener('submit',async e=>{e.preventDefault();const b=$('loginButton');b.disabled=true;$('loginStatus').textContent='Accesso in corso…';const {data,error}=await supabase.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});b.disabled=false;if(error){$('loginStatus').textContent='Accesso non riuscito: '+errText(error);return}$('loginStatus').textContent='';showIn(data.user);});
+$('logoutButton').addEventListener('click',async()=>{await supabase.auth.signOut();showOut();$('password').value='';});
+$('coverFile').addEventListener('change',()=>{const f=$('coverFile').files[0],p=$('coverPreview');if(!f){p.classList.add('hidden');p.removeAttribute('src');return}if(!['image/jpeg','image/png','image/webp'].includes(f.type)||f.size>5*1024*1024){setStatus('Scegli un file JPG, PNG o WebP non superiore a 5 MB.','error');$('coverFile').value='';p.classList.add('hidden');return}p.src=URL.createObjectURL(f);p.classList.remove('hidden');setStatus('');});
+async function uploadCover(file){const ext=({'image/jpeg':'jpg','image/png':'png','image/webp':'webp'})[file.type];if(!ext||file.size>5*1024*1024)throw Error('Copertina non valida: usa JPG, PNG o WebP fino a 5 MB.');const path=`${currentUser.id}/${crypto.randomUUID()}.${ext}`;const {error}=await supabase.storage.from(BUCKET).upload(path,file,{cacheControl:'3600',upsert:false,contentType:file.type});if(error)throw error;return supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;}
+function coverPath(url){if(!url)return null;const marker=`/storage/v1/object/public/${BUCKET}/`,i=url.indexOf(marker);return i<0?null:decodeURIComponent(url.slice(i+marker.length));}
+async function deleteCover(url){const path=coverPath(url);if(!path)return;const {error}=await supabase.storage.from(BUCKET).remove([path]);if(error)console.warn('Copertina non eliminata:',error.message);}
+$('bookForm').addEventListener('submit',async e=>{e.preventDefault();if(!currentUser){setStatus('Accedi nuovamente per continuare.','error');return}const b=$('saveButton');b.disabled=true;setStatus('Salvataggio in corso…');let newUrl='';const oldUrl=$('oldCoverUrl').value;try{const file=$('coverFile').files[0];if(file)newUrl=await uploadCover(file);const amazon=$('amazonUrl').value.trim();if(amazon&&!/^https:\/\/(www\.)?(amazon\.[a-z.]+|amzn\.to)\//i.test(amazon))throw Error('Inserisci un link Amazon valido che inizi con https://.');const book={titolo:$('title').value.trim(),descrizione:$('description').value.trim(),amazon_url:amazon||null,copertina_url:newUrl||oldUrl||null,categoria:$('category').value,'ordine di visualizzazione':parseInt($('sortOrder').value||'0',10),se_visibile:$('visible').checked};const id=$('bookId').value;const result=id?await supabase.from('books').update(book).eq('id',Number(id)):await supabase.from('books').insert(book);if(result.error)throw result.error;if(newUrl&&oldUrl)await deleteCover(oldUrl);clearForm();setStatus('Libro salvato correttamente.','success');await loadBooks();}catch(e){if(newUrl)await deleteCover(newUrl);setStatus('Salvataggio non riuscito: '+errText(e),'error')}finally{b.disabled=false}});
+function card(book){const a=document.createElement('article');a.className='book';const img=document.createElement('img');img.alt=book.titolo?`Copertina di ${book.titolo}`:'Copertina libro';if(book.copertina_url)img.src=book.copertina_url;else img.alt='Nessuna copertina caricata';const info=document.createElement('div'),title=document.createElement('h3');title.textContent=book.titolo||'Senza titolo';const cat=document.createElement('p');cat.textContent=book.categoria||'Senza categoria';const pill=document.createElement('span');pill.className='pill';pill.textContent=book.se_visibile?'Visibile':'Nascosto';const desc=document.createElement('p');desc.textContent=(book.descrizione||'').slice(0,170);info.append(title,cat,pill,desc);const actions=document.createElement('div');actions.className='book-actions';const edit=document.createElement('button');edit.type='button';edit.className='secondary';edit.textContent='Modifica';edit.onclick=()=>editBook(book);const del=document.createElement('button');del.type='button';del.className='danger';del.textContent='Elimina';del.onclick=()=>removeBook(book);actions.append(edit,del);a.append(img,info,actions);return a;}
+async function loadBooks(){if(!currentUser)return;$('listStatus').textContent='Caricamento elenco…';$('bookList').replaceChildren();const {data,error}=await supabase.from('books').select('id,titolo,descrizione,amazon_url,copertina_url,categoria,"ordine di visualizzazione",se_visibile').order('ordine di visualizzazione',{ascending:true});if(error){$('listStatus').textContent='Non riesco a leggere il catalogo: '+errText(error);return}if(!data.length){$('listStatus').textContent='Non ci sono ancora libri. Usa il modulo qui sopra per aggiungerne uno.';return}data.forEach(b=>$('bookList').append(card(b)));$('listStatus').textContent=`${data.length} libri nel catalogo.`;}
+function editBook(b){$('bookId').value=b.id;$('oldCoverUrl').value=b.copertina_url||'';$('title').value=b.titolo||'';$('description').value=b.descrizione||'';$('amazonUrl').value=b.amazon_url||'';$('category').value=b.categoria||'Altro';$('sortOrder').value=b['ordine di visualizzazione']??0;$('visible').checked=!!b.se_visibile;$('coverFile').value='';if(b.copertina_url){$('coverPreview').src=b.copertina_url;$('coverPreview').classList.remove('hidden')}else $('coverPreview').classList.add('hidden');$('formTitle').textContent='Modifica libro';$('saveButton').textContent='Salva modifiche';$('cancelEditButton').classList.remove('hidden');setStatus('');$('editorPanel').scrollIntoView({behavior:'smooth',block:'start'});}
+async function removeBook(b){if(!confirm(`Vuoi eliminare definitivamente "${b.titolo}" dal catalogo?`))return;$('listStatus').textContent='Eliminazione in corso…';const {error}=await supabase.from('books').delete().eq('id',b.id);if(error){$('listStatus').textContent='Eliminazione non riuscita: '+errText(error);return}await deleteCover(b.copertina_url);if($('bookId').value===String(b.id))clearForm();await loadBooks();}
+$('cancelEditButton').addEventListener('click',clearForm);$('resetButton').addEventListener('click',()=>setTimeout(clearForm,0));$('refreshButton').addEventListener('click',loadBooks);
+const {data:{session}}=await supabase.auth.getSession();if(session?.user)showIn(session.user);else showOut();supabase.auth.onAuthStateChange((_event,session)=>{if(session?.user)showIn(session.user);else showOut();});
+</script>
+</body></html>
