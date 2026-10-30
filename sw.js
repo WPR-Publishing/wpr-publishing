@@ -1,5 +1,5 @@
 
-const CACHE_NAME = "wpr-publishing-v5";
+const CACHE_NAME = "wpr-publishing-v6";
 
 const APP_FILES = [
   "/wpr-publishing/",
