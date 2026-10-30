@@ -1,11 +1,12 @@
 
-const CACHE_NAME = "wpr-publishing-v1";
+const CACHE_NAME = "wpr-publishing-v2";
 
 const APP_FILES = [
   "/wpr-publishing/",
   "/wpr-publishing/index.html",
   "/wpr-publishing/manifest.json",
-  "/wpr-publishing/icon.svg"
+  "/wpr-publishing/icon-192.png",
+  "/wpr-publishing/icon-512.png"
 ];
 
 self.addEventListener("install", (event) => {
