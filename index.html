@@ -41,12 +41,25 @@ footer{background:#17263c;color:white;padding:24px 6%;font-size:14px}
 <section class="hero" id="home"><h2>Ogni libro apre una nuova porta.</h2><img class="brand-logo" src="/wpr-publishing/wpr-logo-trasparente.png" alt="Logo WPR Publishing" /><p>Scopri le pubblicazioni WPR Publishing: libri pratici, agende, saggistica e guide, per trovare nuove idee e informazioni utili.</p></section>
 <main>
 <section id="catalogo"><h2 class="section-title">Esplora per categoria</h2><p>Scegli un argomento per trovare i libri che ti interessano.</p><div class="categories" id="categories" aria-label="Categorie del catalogo"></div><h2 class="section-title" id="catalog-title">Tutte le pubblicazioni</h2><p id="catalog-description">Consulta il catalogo completo di WPR Publishing.</p><div id="catalog-message" class="catalog-message" role="status">Caricamento del catalogo…</div><div class="catalog" id="catalog" aria-live="polite"></div></section>
-<section class="notice" id="novita"><h2>Le nuove uscite</h2><p>Questa sezione sarà dedicata alle nuove pubblicazioni di WPR Publishing.</p><p>Stiamo preparando un sistema per permettere ai lettori di ricevere aggiornamenti sulle prossime uscite.</p></section>
+<section class="notice" id="novita">
+<h2>Le nuove uscite</h2>
+<p>Vuoi sapere quando pubblichiamo un nuovo libro o una novità editoriale?</p>
+<p>Attiva le notifiche: riceverai gli aggiornamenti direttamente su questo dispositivo. Potrai disattivarle in qualsiasi momento dalle impostazioni del browser.</p>
+<div id="push-turnstile" style="margin:18px 0"></div>
+<button class="button" id="enable-notifications" type="button">Attiva le notifiche</button>
+<p id="push-status" role="status" aria-live="polite">Le notifiche sono facoltative e richiedono il consenso del browser.</p>
+</section>
 </main>
 <footer><p>© WPR Publishing — Tutti i diritti riservati.</p><p>Scopri i libri e visita le rispettive pagine Amazon.</p></footer>
 <script>
 const SUPABASE_URL="https://ghvvotagwphvyfenxbqi.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_2DB7v3ZJsfFtmJBsSEjHAg_AFj71rC6";
+const VAPID_PUBLIC_KEY="BHxuj-2ACrDifnpIC4oFPWGxjQ3BjnzhJ1Bf-rGPg8TGE82RlnpEo3Oh4JIgHxAl8Psum5yay-Rxub3GgbpukHA";
+const TURNSTILE_SITE_KEY="0x4AAAAAAFtF33s806LaYmEK";
+const PUSH_REGISTER_URL=SUPABASE_URL+"/functions/v1/register-push";
+let turnstileToken="";
+let turnstileWidgetId=null;
+
 const catalogElement=document.getElementById("catalog");
 const messageElement=document.getElementById("catalog-message");
 const categoriesElement=document.getElementById("categories");
@@ -141,6 +154,75 @@ async function loadCatalog(){
   }catch(error){console.error("Errore nel caricamento del catalogo:",error);messageElement.textContent="Non è stato possibile caricare il catalogo in questo momento. Riprova più tardi.";messageElement.hidden=false;}
 }
 loadCatalog();
+
+function setPushStatus(message){document.getElementById("push-status").textContent=message;}
+function urlBase64ToUint8Array(base64String){
+  const padding="=".repeat((4-base64String.length%4)%4);
+  const base64=(base64String+padding).replace(/-/g,"+").replace(/_/g,"/");
+  const raw=atob(base64);
+  return Uint8Array.from([...raw].map(char=>char.charCodeAt(0)));
+}
+function onTurnstileLoaded(){
+  if(!window.turnstile)return;
+  turnstileWidgetId=window.turnstile.render("#push-turnstile",{
+    sitekey:TURNSTILE_SITE_KEY,
+    callback:(token)=>{turnstileToken=token;},
+    "expired-callback":()=>{turnstileToken="";setPushStatus("La verifica è scaduta. Completa nuovamente il controllo anti-bot.");},
+    "error-callback":()=>{turnstileToken="";setPushStatus("Verifica anti-bot non disponibile. Riprova più tardi.");}
+  });
+}
+(function loadTurnstile(){
+  const script=document.createElement("script");
+  script.src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+  script.async=true;script.defer=true;script.onload=onTurnstileLoaded;
+  script.onerror=()=>setPushStatus("Non è stato possibile caricare la verifica anti-bot.");
+  document.head.appendChild(script);
+})();
+document.getElementById("enable-notifications").addEventListener("click",async()=>{
+  const button=document.getElementById("enable-notifications");
+  if(!("serviceWorker" in navigator)||!("PushManager" in window)||!("Notification" in window)){
+    setPushStatus("Questo browser o dispositivo non supporta le notifiche web push.");
+    return;
+  }
+  if(!turnstileToken){
+    setPushStatus("Completa prima la verifica anti-bot.");
+    return;
+  }
+  button.disabled=true;
+  setPushStatus("Richiesta di autorizzazione in corso…");
+  try{
+    const permission=await Notification.requestPermission();
+    if(permission!=="granted"){
+      setPushStatus(permission==="denied"?"Hai negato le notifiche. Puoi modificare la scelta dalle impostazioni del browser.":"Non hai autorizzato le notifiche.");
+      return;
+    }
+    const registration=await navigator.serviceWorker.ready;
+    let subscription=await registration.pushManager.getSubscription();
+    if(!subscription){
+      subscription=await registration.pushManager.subscribe({
+        userVisibleOnly:true,
+        applicationServerKey:urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+      });
+    }
+    const subscriptionData=subscription.toJSON();
+    const response=await fetch(PUSH_REGISTER_URL,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        endpoint:subscriptionData.endpoint,
+        keys:subscriptionData.keys,
+        turnstileToken
+      })
+    });
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok||result.success!==true)throw new Error(result.error||"Registrazione non riuscita.");
+    setPushStatus("Notifiche attivate su questo dispositivo. Grazie!");
+    if(turnstileWidgetId!==null&&window.turnstile){window.turnstile.reset(turnstileWidgetId);turnstileToken="";}
+  }catch(error){
+    console.error("Errore attivazione notifiche:",error);
+    setPushStatus("Non è stato possibile attivare le notifiche: "+(error.message||"riprova più tardi."));
+  }finally{button.disabled=false;}
+});
 if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("/wpr-publishing/sw.js").catch(error=>console.error("Registrazione service worker fallita:",error)));}
 </script>
 </body>
