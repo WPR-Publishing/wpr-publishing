@@ -1,5 +1,5 @@
 
-const CACHE_NAME = "wpr-publishing-v3";
+const CACHE_NAME = "wpr-publishing-v4";
 
 const APP_FILES = [
   "/wpr-publishing/",
@@ -37,8 +37,9 @@ self.addEventListener("fetch", (event) => {
   if (url.origin !== self.location.origin) return;
 
   event.respondWith(
-    fetch(event.request).catch(() =>
-      caches.match(event.request)
-    )
+    (event.request.mode === "navigate"
+      ? fetch(new Request(event.request, { cache: "no-store" }))
+      : fetch(event.request)
+    ).catch(() => caches.match(event.request))
   );
 });
