@@ -12,7 +12,7 @@
 *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:Arial,sans-serif;color:#243044;background:#f7f6f2;line-height:1.6}
 header{background:#17263c;color:white;padding:24px 6%}header h1{margin:0;letter-spacing:1px}header p{margin:4px 0 0;color:#d6deea}
 nav{margin-top:18px}nav a{color:white;margin-right:22px;text-decoration:none}nav a:hover{text-decoration:underline}
-.hero{padding:48px 6% 52px;background:#e8e4d9}.hero h2{font-family:Georgia,serif;font-size:clamp(32px,5vw,48px);line-height:1.15;max-width:700px;margin:0 0 16px}.hero p{max-width:650px}
+.hero{padding:48px 6% 52px;background:#e8e4d9}.brand-logo{display:block;width:min(190px,42vw);height:auto;margin:20px auto 22px;filter:drop-shadow(0 5px 10px rgba(23,38,60,.10))}.hero h2{font-family:Georgia,serif;font-size:clamp(32px,5vw,48px);line-height:1.15;max-width:700px;margin:0 0 16px}.hero p{max-width:650px}
 main{padding:30px 6% 60px}.section-title{font-family:Georgia,serif;font-size:30px}
 .categories{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin:22px 0 34px}
 .category-tile{position:relative;overflow:hidden;border:1px solid #ded7c8;border-radius:13px;background:linear-gradient(145deg,#fff 0%,#f8f6f0 100%);padding:21px 19px;text-align:left;cursor:pointer;color:#17263c;min-height:116px;box-shadow:0 3px 12px rgba(23,38,60,.055);transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease,background .2s ease}
@@ -36,7 +36,7 @@ footer{background:#17263c;color:white;padding:24px 6%;font-size:14px}
 </head>
 <body>
 <header><h1>WPR Publishing</h1><p>Libri, idee e nuove storie da scoprire.</p><nav><a href="#home">Home</a><a href="#catalogo">Catalogo</a><a href="#novita">Novità</a></nav></header>
-<section class="hero" id="home"><h2>Ogni libro apre una nuova porta.</h2><p>Scopri le pubblicazioni WPR Publishing: libri pratici, agende, saggistica e guide, per trovare nuove idee e informazioni utili.</p></section>
+<section class="hero" id="home"><h2>Ogni libro apre una nuova porta.</h2><img class="brand-logo" src="/wpr-publishing/wpr-logo-trasparente.png" alt="Logo WPR Publishing" /><p>Scopri le pubblicazioni WPR Publishing: libri pratici, agende, saggistica e guide, per trovare nuove idee e informazioni utili.</p></section>
 <main>
 <section id="catalogo"><h2 class="section-title">Esplora per categoria</h2><p>Scegli un argomento per trovare i libri che ti interessano.</p><div class="categories" id="categories" aria-label="Categorie del catalogo"></div><h2 class="section-title" id="catalog-title">Tutte le pubblicazioni</h2><p id="catalog-description">Consulta il catalogo completo di WPR Publishing.</p><div id="catalog-message" class="catalog-message" role="status">Caricamento del catalogo…</div><div class="catalog" id="catalog" aria-live="polite"></div></section>
 <section class="notice" id="novita"><h2>Le nuove uscite</h2><p>Questa sezione sarà dedicata alle nuove pubblicazioni di WPR Publishing.</p><p>Stiamo preparando un sistema per permettere ai lettori di ricevere aggiornamenti sulle prossime uscite.</p></section>
