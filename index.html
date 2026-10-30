@@ -14,6 +14,12 @@ header{background:#17263c;color:white;padding:24px 6%}header h1{margin:0;letter-
 nav{margin-top:18px}nav a{color:white;margin-right:22px;text-decoration:none}nav a:hover{text-decoration:underline}
 .hero{padding:55px 6%;background:#e8e4d9}.hero h2{font-family:Georgia,serif;font-size:clamp(32px,5vw,48px);line-height:1.15;max-width:700px;margin:0 0 16px}.hero p{max-width:650px}
 main{padding:30px 6% 60px}.section-title{font-family:Georgia,serif;font-size:30px}
+.categories{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin:22px 0 34px}
+.category-tile{border:1px solid #d8d1c2;border-radius:10px;background:#fff;padding:20px 18px;text-align:left;cursor:pointer;color:#17263c;min-height:112px;transition:transform .15s,border-color .15s,background .15s}
+.category-tile:hover,.category-tile:focus-visible{border-color:#b28a43;background:#fbf8f0;transform:translateY(-2px);outline:none}
+.category-tile[aria-pressed="true"]{border:2px solid #b28a43;background:#f2ecdf;padding:19px 17px}
+.category-tile strong{display:block;font-family:Georgia,serif;font-size:18px;line-height:1.25}
+.category-tile span{display:block;color:#657187;font-size:13px;margin-top:7px}
 .catalog{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:22px}
 .book{background:white;border:1px solid #e1ded6;border-radius:8px;padding:18px;display:flex;flex-direction:column;align-items:stretch;min-width:0}
 .cover{width:100%;max-width:280px;aspect-ratio:2/3;max-height:380px;margin:0 auto;background:#e8e4d9;color:#17263c;display:flex;align-items:center;justify-content:center;text-align:center;padding:22px;font-family:Georgia,serif;border:1px solid #d8d1c2;overflow:hidden}
@@ -29,7 +35,7 @@ footer{background:#17263c;color:white;padding:24px 6%;font-size:14px}
 <header><h1>WPR Publishing</h1><p>Libri, idee e nuove storie da scoprire.</p><nav><a href="#home">Home</a><a href="#catalogo">Catalogo</a><a href="#novita">Novità</a></nav></header>
 <section class="hero" id="home"><h2>Ogni libro apre una nuova porta.</h2><p>Scopri le pubblicazioni WPR Publishing: libri pratici, agende, saggistica e guide, per trovare nuove idee e informazioni utili.</p></section>
 <main>
-<section id="catalogo"><h2 class="section-title">Il nostro catalogo</h2><p>Scopri i nostri libri e consulta le relative pagine Amazon.</p><div id="catalog-message" class="catalog-message" role="status">Caricamento del catalogo…</div><div class="catalog" id="catalog" aria-live="polite"></div></section>
+<section id="catalogo"><h2 class="section-title">Esplora per categoria</h2><p>Scegli un argomento per trovare i libri che ti interessano.</p><div class="categories" id="categories" aria-label="Categorie del catalogo"></div><h2 class="section-title" id="catalog-title">Tutte le pubblicazioni</h2><p id="catalog-description">Consulta il catalogo completo di WPR Publishing.</p><div id="catalog-message" class="catalog-message" role="status">Caricamento del catalogo…</div><div class="catalog" id="catalog" aria-live="polite"></div></section>
 <section class="notice" id="novita"><h2>Le nuove uscite</h2><p>Questa sezione sarà dedicata alle nuove pubblicazioni di WPR Publishing.</p><p>Stiamo preparando un sistema per permettere ai lettori di ricevere aggiornamenti sulle prossime uscite.</p></section>
 </main>
 <footer><p>© WPR Publishing — Tutti i diritti riservati.</p><p>Scopri i libri e visita le rispettive pagine Amazon.</p></footer>
@@ -38,6 +44,57 @@ const SUPABASE_URL="https://ghvvotagwphvyfenxbqi.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_2DB7v3ZJsfFtmJBsSEjHAg_AFj71rC6";
 const catalogElement=document.getElementById("catalog");
 const messageElement=document.getElementById("catalog-message");
+const categoriesElement=document.getElementById("categories");
+const catalogTitle=document.getElementById("catalog-title");
+const catalogDescription=document.getElementById("catalog-description");
+const CATEGORIES=["Agende e organizzazione","Cucina e tradizioni","Salute e benessere","Guide e manuali","Crescita personale","Other languages"];
+const CATEGORY_INFO={
+"Agende e organizzazione":["Agenda e strumenti per organizzare il tempo"],
+"Cucina e tradizioni":["Ricette, sapori e cultura gastronomica"],
+"Salute e benessere":["Informazione e benessere quotidiano"],
+"Guide e manuali":["Guide pratiche, idee e progetti"],
+"Crescita personale":["Libri per conoscersi e migliorarsi"],
+"Other languages":["Books and publications in other languages"]
+};
+let allBooks=[];
+let activeCategory="Tutti i libri";
+function canonicalCategory(value,title=""){
+  const raw=(value||"").trim().toLocaleLowerCase("it");
+  if(["agende e organizzazione","agenda","agende","organizzazione"].includes(raw))return CATEGORIES[0];
+  if(["cucina e tradizioni","cucina"].includes(raw))return CATEGORIES[1];
+  if(["salute e benessere","benessere","salute"].includes(raw))return CATEGORIES[2];
+  if(["guide e manuali","guide pratiche","fai da te","attività","attivita"].includes(raw))return CATEGORIES[3];
+  if(["other languages","english","inglese","lingue straniere","foreign languages"].includes(raw)||raw.includes("english"))return CATEGORIES[5];
+  if(["crescita personale","saggistica","altro","altra"].includes(raw))return CATEGORIES[4];
+  const t=(title||"").toLocaleLowerCase("it");
+  if(t.includes("agenda"))return CATEGORIES[0];
+  if(t.includes("roma se magna")||raw.includes("cucin"))return CATEGORIES[1];
+  if(t.includes("sgonfia")||t.includes("pancia"))return CATEGORIES[2];
+  if(t.includes("moving to italy")||t.includes("english"))return CATEGORIES[5];
+  if(t.includes("ikea")||t.includes("hack"))return CATEGORIES[3];
+  return CATEGORIES.includes(value)?value:CATEGORIES[4];
+}
+function renderCategories(){
+  categoriesElement.replaceChildren();
+  const entries=[{name:"Tutti i libri",desc:"Sfoglia l'intero catalogo" },...CATEGORIES.map(name=>({name,desc:CATEGORY_INFO[name][0]}))];
+  entries.forEach(item=>{
+    const button=document.createElement("button");button.type="button";button.className="category-tile";
+    button.setAttribute("aria-pressed",String(activeCategory===item.name));
+    const strong=document.createElement("strong");strong.textContent=item.name;
+    const desc=document.createElement("span");desc.textContent=item.desc;
+    button.append(strong,desc);button.addEventListener("click",()=>{activeCategory=item.name;renderCategories();renderBooks();});
+    categoriesElement.appendChild(button);
+  });
+}
+function renderBooks(){
+  const filtered=activeCategory==="Tutti i libri"?allBooks:allBooks.filter(book=>canonicalCategory(book.categoria,book.titolo)===activeCategory);
+  catalogTitle.textContent=activeCategory==="Tutti i libri"?"Tutte le pubblicazioni":activeCategory;
+  catalogDescription.textContent=activeCategory==="Tutti i libri"?"Consulta il catalogo completo di WPR Publishing.":CATEGORY_INFO[activeCategory][0]+".";
+  catalogElement.replaceChildren();
+  if(!filtered.length){messageElement.textContent="Al momento non ci sono libri in questa categoria.";messageElement.hidden=false;return;}
+  filtered.forEach(book=>catalogElement.appendChild(makeBookCard(book)));messageElement.hidden=true;
+}
+renderCategories();
 
 function makeCoverPlaceholder(book){
   const placeholder=document.createElement("div"); placeholder.className="cover-placeholder";
@@ -56,10 +113,10 @@ function makeCover(book){
 }
 function makeBookCard(book){
   const article=document.createElement("article"); article.className="book"; article.appendChild(makeCover(book));
-  if(book.categoria){const category=document.createElement("div");category.className="category";category.textContent=book.categoria;article.appendChild(category);}
+  if(book.categoria){const category=document.createElement("div");category.className="category";category.textContent=canonicalCategory(book.categoria,book.titolo);article.appendChild(category);}
   const title=document.createElement("h3");title.textContent=book.titolo||"Titolo non disponibile";article.appendChild(title);
   if(book.descrizione){const description=document.createElement("p");description.textContent=book.descrizione;article.appendChild(description);}
-  if(book.amazon_url){const link=document.createElement("a");link.className="button";link.href=book.amazon_url;link.target="_blank";link.rel="noopener noreferrer";link.textContent=(book.categoria||"").toLowerCase().includes("english")?"Discover on Amazon":"Scopri su Amazon";article.appendChild(link);}
+  if(book.amazon_url){const link=document.createElement("a");link.className="button";link.href=book.amazon_url;link.target="_blank";link.rel="noopener noreferrer";link.textContent=canonicalCategory(book.categoria,book.titolo)==="Other languages"?"Discover on Amazon":"Scopri su Amazon";article.appendChild(link);}
   return article;
 }
 async function loadCatalog(){
@@ -70,9 +127,9 @@ async function loadCatalog(){
     params.set("order",'"ordine di visualizzazione".asc');
     const response=await fetch(`${SUPABASE_URL}/rest/v1/books?${params.toString()}`,{headers:{"apikey":SUPABASE_PUBLISHABLE_KEY,"Accept":"application/json"},cache:"no-store"});
     if(!response.ok) throw new Error(`Supabase ha risposto ${response.status}: ${await response.text()}`);
-    const books=await response.json(); catalogElement.replaceChildren();
-    if(!Array.isArray(books)||books.length===0){messageElement.textContent="Al momento non ci sono libri pubblicati.";messageElement.hidden=false;return;}
-    books.forEach(book=>catalogElement.appendChild(makeBookCard(book)));messageElement.hidden=true;
+    const books=await response.json();
+    if(!Array.isArray(books)||books.length===0){allBooks=[];renderBooks();messageElement.textContent="Al momento non ci sono libri pubblicati.";messageElement.hidden=false;return;}
+    allBooks=books;renderBooks();
   }catch(error){console.error("Errore nel caricamento del catalogo:",error);messageElement.textContent="Non è stato possibile caricare il catalogo in questo momento. Riprova più tardi.";messageElement.hidden=false;}
 }
 loadCatalog();
