@@ -133,7 +133,7 @@ function makeCover(book){
   return cover;
 }
 function makeBookCard(book){
-  const article=document.createElement("article"); article.className="book"; article.appendChild(makeCover(book));
+  const article=document.createElement("article"); article.className="book"; if(book.id!==undefined&&book.id!==null)article.id="book-"+book.id; article.appendChild(makeCover(book));
   if(book.categoria){const category=document.createElement("div");category.className="category";category.textContent=canonicalCategory(book.categoria,book.titolo);article.appendChild(category);}
   const title=document.createElement("h3");title.textContent=book.titolo||"Titolo non disponibile";article.appendChild(title);
   if(book.descrizione){const description=document.createElement("p");description.textContent=book.descrizione;article.appendChild(description);}
@@ -151,6 +151,7 @@ async function loadCatalog(){
     const books=await response.json();
     if(!Array.isArray(books)||books.length===0){allBooks=[];renderBooks();messageElement.textContent="Al momento non ci sono libri pubblicati.";messageElement.hidden=false;return;}
     allBooks=books;renderBooks();
+    if(/^#book-\\d+$/.test(location.hash)){const target=document.getElementById(location.hash.slice(1));if(target)target.scrollIntoView({behavior:"smooth",block:"center"});}
   }catch(error){console.error("Errore nel caricamento del catalogo:",error);messageElement.textContent="Non è stato possibile caricare il catalogo in questo momento. Riprova più tardi.";messageElement.hidden=false;}
 }
 loadCatalog();
