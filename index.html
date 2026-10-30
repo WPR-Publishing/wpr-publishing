@@ -15,11 +15,14 @@ nav{margin-top:18px}nav a{color:white;margin-right:22px;text-decoration:none}nav
 .hero{padding:55px 6%;background:#e8e4d9}.hero h2{font-family:Georgia,serif;font-size:clamp(32px,5vw,48px);line-height:1.15;max-width:700px;margin:0 0 16px}.hero p{max-width:650px}
 main{padding:30px 6% 60px}.section-title{font-family:Georgia,serif;font-size:30px}
 .categories{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin:22px 0 34px}
-.category-tile{border:1px solid #d8d1c2;border-radius:10px;background:#fff;padding:20px 18px;text-align:left;cursor:pointer;color:#17263c;min-height:112px;transition:transform .15s,border-color .15s,background .15s}
-.category-tile:hover,.category-tile:focus-visible{border-color:#b28a43;background:#fbf8f0;transform:translateY(-2px);outline:none}
-.category-tile[aria-pressed="true"]{border:2px solid #b28a43;background:#f2ecdf;padding:19px 17px}
-.category-tile strong{display:block;font-family:Georgia,serif;font-size:18px;line-height:1.25}
-.category-tile span{display:block;color:#657187;font-size:13px;margin-top:7px}
+.category-tile{position:relative;overflow:hidden;border:1px solid #ded7c8;border-radius:13px;background:linear-gradient(145deg,#fff 0%,#f8f6f0 100%);padding:21px 19px;text-align:left;cursor:pointer;color:#17263c;min-height:116px;box-shadow:0 3px 12px rgba(23,38,60,.055);transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease,background .2s ease}
+.category-tile::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:#b28a43;opacity:.75}
+.category-tile:hover,.category-tile:focus-visible{border-color:#b28a43;background:#fffdf8;transform:translateY(-3px);box-shadow:0 8px 20px rgba(23,38,60,.11);outline:2px solid transparent;outline-offset:3px}
+.category-tile[aria-pressed="true"]{border:1px solid #b28a43;background:linear-gradient(145deg,#20334d 0%,#17263c 100%);color:#fff;box-shadow:0 6px 18px rgba(23,38,60,.18)}
+.category-tile[aria-pressed="true"]::before{width:5px;opacity:1;background:#d2ad68}
+.category-tile strong{display:block;font-family:Georgia,serif;font-size:18px;line-height:1.25;letter-spacing:.1px}
+.category-tile span{display:block;color:#657187;font-size:13px;margin-top:8px;line-height:1.4}
+.category-tile[aria-pressed="true"] span{color:#dce3ec}
 .catalog{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:22px}
 .book{background:white;border:1px solid #e1ded6;border-radius:8px;padding:18px;display:flex;flex-direction:column;align-items:stretch;min-width:0}
 .cover{width:100%;max-width:280px;aspect-ratio:2/3;max-height:380px;margin:0 auto;background:#e8e4d9;color:#17263c;display:flex;align-items:center;justify-content:center;text-align:center;padding:22px;font-family:Georgia,serif;border:1px solid #d8d1c2;overflow:hidden}
@@ -47,13 +50,14 @@ const messageElement=document.getElementById("catalog-message");
 const categoriesElement=document.getElementById("categories");
 const catalogTitle=document.getElementById("catalog-title");
 const catalogDescription=document.getElementById("catalog-description");
-const CATEGORIES=["Agende e organizzazione","Cucina e tradizioni","Salute e benessere","Guide e manuali","Romanzi","Other languages"];
+const CATEGORIES=["Agende e organizzazione","Cucina e tradizioni","Salute e benessere","Guide e manuali","Attività ricreative","Romanzi","Other languages"];
 const CATEGORY_INFO={
 "Agende e organizzazione":["Agenda e strumenti per organizzare il tempo"],
 "Cucina e tradizioni":["Ricette, sapori e cultura gastronomica"],
 "Salute e benessere":["Informazione e benessere quotidiano"],
 "Guide e manuali":["Guide pratiche, idee e progetti"],
-"Romanzi":["Libri per conoscersi e migliorarsi"],
+"Attività ricreative":["Libri per giocare, creare e divertirsi"],
+"Romanzi":["Storie e mondi da esplorare"],
 "Other languages":["Books and publications in other languages"]
 };
 let allBooks=[];
@@ -63,16 +67,17 @@ function canonicalCategory(value,title=""){
   if(["agende e organizzazione","agenda","agende","organizzazione"].includes(raw))return CATEGORIES[0];
   if(["cucina e tradizioni","cucina"].includes(raw))return CATEGORIES[1];
   if(["salute e benessere","benessere","salute"].includes(raw))return CATEGORIES[2];
+  if(["attività ricreative","attivita ricreative"].includes(raw))return CATEGORIES[4];
   if(["guide e manuali","guide pratiche","fai da te","attività","attivita"].includes(raw))return CATEGORIES[3];
   if(["other languages","english","inglese","lingue straniere","foreign languages"].includes(raw)||raw.includes("english"))return CATEGORIES[5];
-  if(["crescita personale","saggistica","altro","altra"].includes(raw))return CATEGORIES[4];
+  if(["crescita personale","saggistica","altro","altra"].includes(raw))return CATEGORIES[5];
   const t=(title||"").toLocaleLowerCase("it");
   if(t.includes("agenda"))return CATEGORIES[0];
   if(t.includes("roma se magna")||raw.includes("cucin"))return CATEGORIES[1];
   if(t.includes("sgonfia")||t.includes("pancia"))return CATEGORIES[2];
   if(t.includes("moving to italy")||t.includes("english"))return CATEGORIES[5];
   if(t.includes("ikea")||t.includes("hack"))return CATEGORIES[3];
-  return CATEGORIES.includes(value)?value:CATEGORIES[4];
+  return CATEGORIES.includes(value)?value:CATEGORIES[3];
 }
 function renderCategories(){
   categoriesElement.replaceChildren();
