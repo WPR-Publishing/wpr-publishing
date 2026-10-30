@@ -33,7 +33,7 @@ button{font:inherit;font-weight:650;border:0;border-radius:8px;padding:10px 15px
 <div class="field full"><label for="title">Titolo *</label><input id="title" required maxlength="250"></div>
 <div class="field full"><label for="description">Descrizione</label><textarea id="description" maxlength="5000"></textarea></div>
 <div class="field"><label for="amazonUrl">Link Amazon</label><input id="amazonUrl" type="url" placeholder="https://www.amazon.it/dp/"></div>
-<div class="field"><label for="category">Categoria</label><select id="category"><option>Agende e organizzazione</option><option>Cucina e tradizioni</option><option>Salute e benessere</option><option>Guide e manuali</option><option>Romanzi</option><option>Other languages</option></select></div>
+<div class="field"><label for="category">Categoria</label><select id="category"><option>Agende e organizzazione</option><option>Cucina e tradizioni</option><option>Salute e benessere</option><option>Guide e manuali</option><option>Attività ricreative</option><option>Romanzi</option><option>Other languages</option></select></div>
 <div class="field"><label for="sortOrder">Ordine di visualizzazione</label><input id="sortOrder" type="number" step="1" value="0"></div>
 <div class="field"><label for="coverFile">Copertina dal computer</label><input id="coverFile" type="file" accept="image/jpeg,image/png,image/webp"><img id="coverPreview" class="preview hidden" alt="Anteprima copertina"></div>
 </div>
@@ -50,22 +50,23 @@ const SUPABASE_PUBLISHABLE_KEY='sb_publishable_2DB7v3ZJsfFtmJBsSEjHAg_AFj71rC6';
 const BUCKET='copertine-libri', supabase=createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
 const $=id=>document.getElementById(id);let currentUser=null;
 function setStatus(msg,type=''){ $('status').textContent=msg;$('status').className=type; }
-const CATEGORIES=["Agende e organizzazione","Cucina e tradizioni","Salute e benessere","Guide e manuali","Romanzi","Other languages"];
+const CATEGORIES=["Agende e organizzazione","Cucina e tradizioni","Salute e benessere","Guide e manuali","Attività ricreative","Romanzi","Other languages"];
 function canonicalCategory(value,title=""){
  const raw=(value||"").trim().toLocaleLowerCase("it");
  if(["agende e organizzazione","agenda","agende","organizzazione"].includes(raw))return CATEGORIES[0];
  if(["cucina e tradizioni","cucina"].includes(raw))return CATEGORIES[1];
  if(["salute e benessere","benessere","salute"].includes(raw))return CATEGORIES[2];
+ if(["attività ricreative","attivita ricreative"].includes(raw))return CATEGORIES[4];
  if(["guide e manuali","guide pratiche","fai da te","attività","attivita"].includes(raw))return CATEGORIES[3];
  if(["other languages","english","inglese","lingue straniere","foreign languages"].includes(raw)||raw.includes("english"))return CATEGORIES[5];
- if(["crescita personale","saggistica","altro","altra"].includes(raw))return CATEGORIES[4];
+ if(["crescita personale","saggistica","altro","altra"].includes(raw))return CATEGORIES[5];
  const t=(title||"").toLocaleLowerCase("it");
  if(t.includes("agenda"))return CATEGORIES[0];
  if(t.includes("roma se magna")||raw.includes("cucin"))return CATEGORIES[1];
  if(t.includes("sgonfia")||t.includes("pancia"))return CATEGORIES[2];
  if(t.includes("moving to italy")||t.includes("english"))return CATEGORIES[5];
  if(t.includes("ikea")||t.includes("hack"))return CATEGORIES[3];
- return CATEGORIES.includes(value)?value:CATEGORIES[4];
+ return CATEGORIES.includes(value)?value:CATEGORIES[3];
 }
 function errText(e){return e?.message||'Si è verificato un errore. Riprova.'}
 function clearForm(){ $('bookForm').reset();$('bookId').value='';$('oldCoverUrl').value='';$('sortOrder').value='0';$('visible').checked=true;$('formTitle').textContent='Aggiungi un libro';$('saveButton').textContent='Salva libro';$('cancelEditButton').classList.add('hidden');$('coverPreview').classList.add('hidden');$('coverPreview').removeAttribute('src');setStatus('');}
