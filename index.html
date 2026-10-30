@@ -69,13 +69,13 @@ function canonicalCategory(value,title=""){
   if(["salute e benessere","benessere","salute"].includes(raw))return CATEGORIES[2];
   if(["attività ricreative","attivita ricreative"].includes(raw))return CATEGORIES[4];
   if(["guide e manuali","guide pratiche","fai da te","attività","attivita"].includes(raw))return CATEGORIES[3];
-  if(["other languages","english","inglese","lingue straniere","foreign languages"].includes(raw)||raw.includes("english"))return CATEGORIES[5];
+  if(["other languages","english","inglese","lingue straniere","foreign languages"].includes(raw)||raw.includes("english"))return CATEGORIES[6];
   if(["crescita personale","saggistica","altro","altra"].includes(raw))return CATEGORIES[5];
   const t=(title||"").toLocaleLowerCase("it");
   if(t.includes("agenda"))return CATEGORIES[0];
   if(t.includes("roma se magna")||raw.includes("cucin"))return CATEGORIES[1];
   if(t.includes("sgonfia")||t.includes("pancia"))return CATEGORIES[2];
-  if(t.includes("moving to italy")||t.includes("english"))return CATEGORIES[5];
+  if(t.includes("moving to italy")||t.includes("english"))return CATEGORIES[6];
   if(t.includes("ikea")||t.includes("hack"))return CATEGORIES[3];
   return CATEGORIES.includes(value)?value:CATEGORIES[3];
 }
