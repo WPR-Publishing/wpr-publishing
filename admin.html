@@ -14,7 +14,7 @@ input,textarea,select{width:100%;font:inherit;padding:11px 12px;border:1px solid
 .checkrow{display:flex;align-items:center;gap:10px;margin:8px 0 16px}.checkrow input{width:auto}
 button{font:inherit;font-weight:650;border:0;border-radius:8px;padding:10px 15px;cursor:pointer;background:var(--navy);color:white}button.secondary{background:#e9eff1;color:var(--navy);border:1px solid var(--line)}button.danger{background:#fff0f0;color:var(--red);border:1px solid #e8bcbc}button:disabled{opacity:.55;cursor:wait}
 .actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.hidden{display:none!important}#status{margin:12px 0 0;min-height:1.5em;white-space:pre-wrap}#status.error{color:var(--red)}#status.success{color:#176b48}
-.book-list{display:grid;gap:12px}.book{display:grid;grid-template-columns:76px 1fr auto;gap:14px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:12px}.book img{width:76px;height:100px;object-fit:contain;background:#f0f3f4;border-radius:5px}.book p{margin:3px 0;color:var(--muted);font-size:.9rem;overflow-wrap:anywhere}.book-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}.pill{display:inline-block;padding:2px 8px;border-radius:20px;background:#edf5f2;color:#245a49;font-size:.78rem}.preview{max-width:140px;max-height:180px;object-fit:contain;display:block;margin-top:10px}footer{text-align:center;color:var(--muted);font-size:.85rem;padding:0 16px 26px}
+.stats-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:14px 0}.stat-card{border:1px solid var(--line);border-radius:10px;padding:14px;background:#fbfcfc}.stat-card span{display:block;color:var(--muted);font-size:.88rem}.stat-card strong{display:block;font-size:1.8rem;color:var(--navy);font-variant-numeric:tabular-nums;margin-top:4px}@media(max-width:650px){.stats-grid{grid-template-columns:1fr 1fr}}.book-list{display:grid;gap:12px}.book{display:grid;grid-template-columns:76px 1fr auto;gap:14px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:12px}.book img{width:76px;height:100px;object-fit:contain;background:#f0f3f4;border-radius:5px}.book p{margin:3px 0;color:var(--muted);font-size:.9rem;overflow-wrap:anywhere}.book-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}.pill{display:inline-block;padding:2px 8px;border-radius:20px;background:#edf5f2;color:#245a49;font-size:.78rem}.preview{max-width:140px;max-height:180px;object-fit:contain;display:block;margin-top:10px}footer{text-align:center;color:var(--muted);font-size:.85rem;padding:0 16px 26px}
 @media(max-width:650px){.grid{grid-template-columns:1fr;gap:0}.full{grid-column:auto}.book{grid-template-columns:60px 1fr}.book img{width:60px;height:82px}.book-actions{grid-column:1/-1;justify-content:flex-start}.panel{padding:16px}}
 </style>
 </head>
@@ -40,6 +40,18 @@ button{font:inherit;font-weight:650;border:0;border-radius:8px;padding:10px 15px
 <label class="checkrow"><input id="visible" type="checkbox" checked> Visibile nel catalogo pubblico</label>
 <div class="actions"><button id="saveButton" type="submit">Salva libro</button><button class="secondary hidden" id="cancelEditButton" type="button">Annulla modifica</button><button class="secondary" id="resetButton" type="reset">Svuota campi</button></div><p id="status" role="status"></p>
 </form></section>
+<section class="panel" id="pushStatsPanel">
+<h2>Statistiche notifiche</h2>
+<p class="hint">Solo conteggi aggregati dei dispositivi registrati. Nessun dato individuale viene mostrato.</p>
+<div class="stats-grid">
+<div class="stat-card"><span>Dispositivi attivi</span><strong id="statActive">—</strong></div>
+<div class="stat-card"><span>Iscrizioni totali</span><strong id="statTotal">—</strong></div>
+<div class="stat-card"><span>Nuove iscrizioni · 7 giorni</span><strong id="stat7Days">—</strong></div>
+<div class="stat-card"><span>Nuove iscrizioni · 30 giorni</span><strong id="stat30Days">—</strong></div>
+</div>
+<div class="actions"><button class="secondary" id="refreshPushStatsButton" type="button">Aggiorna statistiche</button></div>
+<p id="pushStatsStatus" class="hint" role="status" aria-live="polite"></p>
+</section>
 <section class="panel" id="pushCheckPanel"><h2>Verifica notifiche</h2><p class="hint">Controlla l'autenticazione e il numero di dispositivi registrati senza inviare notifiche.</p><div class="actions"><button class="secondary" id="pushCheckButton" type="button">Esegui verifica senza invio</button><button id="pushTestButton" type="button">Invia notifica di prova</button></div><p id="pushCheckStatus" class="hint" role="status" aria-live="polite"></p></section>
 <section class="panel"><div class="actions" style="justify-content:space-between"><h2 style="margin:0">Libri inseriti</h2><button class="secondary" id="refreshButton" type="button">Aggiorna elenco</button></div><p class="hint">La lista include anche i libri non visibili al pubblico.</p><div id="bookList" class="book-list"></div><p id="listStatus" class="hint" role="status"></p></section>
 </section></main><footer>WPR Publishing · Pagina di amministrazione non indicizzata</footer>
@@ -71,11 +83,29 @@ function canonicalCategory(value,title=""){
 }
 function errText(e){return e?.message||'Si è verificato un errore. Riprova.'}
 function clearForm(){ $('bookForm').reset();$('bookId').value='';$('oldCoverUrl').value='';editingWasVisible=null;$('sortOrder').value='0';$('visible').checked=true;$('formTitle').textContent='Aggiungi un libro';$('saveButton').textContent='Salva libro';$('cancelEditButton').classList.add('hidden');$('coverPreview').classList.add('hidden');$('coverPreview').removeAttribute('src');setStatus('');}
-function showIn(user){currentUser=user;$('loginPanel').classList.add('hidden');$('adminPanel').classList.remove('hidden');loadBooks();}
+function showIn(user){currentUser=user;$('loginPanel').classList.add('hidden');$('adminPanel').classList.remove('hidden');loadBooks();loadPushStats();}
 function showOut(){currentUser=null;$('adminPanel').classList.add('hidden');$('loginPanel').classList.remove('hidden');}
 $('loginForm').addEventListener('submit',async e=>{e.preventDefault();const b=$('loginButton');b.disabled=true;$('loginStatus').textContent='Accesso in corso…';const {data,error}=await supabase.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});b.disabled=false;if(error){$('loginStatus').textContent='Accesso non riuscito: '+errText(error);return}$('loginStatus').textContent='';showIn(data.user);});
 $('logoutButton').addEventListener('click',async()=>{await supabase.auth.signOut();showOut();$('password').value='';});
 $('pushCheckButton').addEventListener('click',async()=>{const button=$('pushCheckButton');button.disabled=true;$('pushCheckStatus').textContent='Verifica in corso…';try{const {data,error}=await supabase.functions.invoke('send-push',{body:{title:'Verifica tecnica',body:'Questa richiesta non invia notifiche.',dryRun:true}});if(error)throw error;if(!data?.ok||data?.dryRun!==true)throw new Error(data?.error||'Risposta inattesa dalla funzione.');$('pushCheckStatus').textContent='Verifica completata. Dispositivi registrati: '+data.registered+'. Nessuna notifica inviata.';}catch(error){$('pushCheckStatus').textContent='Verifica non riuscita: '+errText(error);}finally{button.disabled=false;}});
+async function loadPushStats(){
+ const button=$('refreshPushStatsButton');
+ button.disabled=true;
+ $('pushStatsStatus').textContent='Caricamento statistiche…';
+ try{
+  const {data,error}=await supabase.functions.invoke('get-push-stats',{body:{}});
+  if(error)throw error;
+  if(!data?.ok)throw new Error(data?.error||'Risposta non valida.');
+  $('statActive').textContent=data.active;
+  $('statTotal').textContent=data.total;
+  $('stat7Days').textContent=data.last7Days;
+  $('stat30Days').textContent=data.last30Days;
+  $('pushStatsStatus').textContent='Statistiche aggiornate.';
+ }catch(error){
+  $('pushStatsStatus').textContent='Impossibile caricare le statistiche: '+errText(error);
+ }finally{button.disabled=false;}
+}
+$('refreshPushStatsButton').addEventListener('click',loadPushStats);
 $('pushTestButton').addEventListener('click',async()=>{if(!confirm('Inviare una notifica di prova a tutti i dispositivi che risultano attualmente registrati?'))return;const button=$('pushTestButton');button.disabled=true;$('pushCheckStatus').textContent='Invio della notifica di prova in corso…';try{const {data,error}=await supabase.functions.invoke('send-push',{body:{title:'WPR Publishing — Notifica di prova',body:'Ottimo! Le notifiche push del catalogo WPR Publishing funzionano correttamente.',url:'https://wpr-publishing.github.io/wpr-publishing/'}});if(error)throw error;if(!data?.ok)throw new Error(data?.error||'Risposta inattesa dalla funzione di invio.');$('pushCheckStatus').textContent='Richiesta completata. Notifiche inviate: '+(data.sent??0)+'. Invii non riusciti: '+(data.failed??0)+'.';}catch(error){$('pushCheckStatus').textContent='Invio non riuscito: '+errText(error);}finally{button.disabled=false;}});
 $('coverFile').addEventListener('change',()=>{const f=$('coverFile').files[0],p=$('coverPreview');if(!f){p.classList.add('hidden');p.removeAttribute('src');return}if(!['image/jpeg','image/png','image/webp'].includes(f.type)||f.size>5*1024*1024){setStatus('Scegli un file JPG, PNG o WebP non superiore a 5 MB.','error');$('coverFile').value='';p.classList.add('hidden');return}p.src=URL.createObjectURL(f);p.classList.remove('hidden');setStatus('');});
 async function uploadCover(file){const ext=({'image/jpeg':'jpg','image/png':'png','image/webp':'webp'})[file.type];if(!ext||file.size>5*1024*1024)throw Error('Copertina non valida: usa JPG, PNG o WebP fino a 5 MB.');const path=`${currentUser.id}/${crypto.randomUUID()}.${ext}`;const {error}=await supabase.storage.from(BUCKET).upload(path,file,{cacheControl:'3600',upsert:false,contentType:file.type});if(error)throw error;return supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;}
