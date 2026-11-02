@@ -57,6 +57,23 @@ const SUPABASE_PUBLISHABLE_KEY="sb_publishable_2DB7v3ZJsfFtmJBsSEjHAg_AFj71rC6";
 const VAPID_PUBLIC_KEY="BHxuj-2ACrDifnpIC4oFPWGxjQ3BjnzhJ1Bf-rGPg8TGE82RlnpEo3Oh4JIgHxAl8Psum5yay-Rxub3GgbpukHA";
 const TURNSTILE_SITE_KEY="0x4AAAAAAFtF33s806LaYmEK";
 const PUSH_REGISTER_URL=SUPABASE_URL+"/functions/v1/register-push";
+  // Registra le visite provenienti dai social tramite Cloudflare
+(function trackSocialVisit() {
+  const channel = new URLSearchParams(window.location.search).get("social");
+
+  if (!["instagram", "tiktok", "facebook"].includes(channel)) {
+    return;
+  }
+
+  fetch("https://wpr-social-counter.walterpro73.workers.dev/track", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ channel }),
+    keepalive: true
+  }).catch(() => {});
+})();
 let turnstileToken="";
 let turnstileWidgetId=null;
 
